@@ -20,26 +20,15 @@
         span(style="line-height: 0;") Площадь, м
           sup 2
         q-input(v-model="roomYardage" outlined dense)
-    .row(v-if="isCharacteristics")
-      // Модификация объекта!!!!!!!
-      .col-6(v-for="(item, index) in characteristics" :key="index")
-        q-checkbox(v-if="index < itemsCount" v-model="item.isChecked" :label="item.name")
-    .row.q-pb-lg(v-if="isCharacteristics")
-      .col.cursor-pointer(@click="isCharacteristics=!isCharacteristics")
-        .text-h6.text-primary Показать все
-    .row(v-if="!isCharacteristics")
-      // Модификация объекта!!!!!!!
-      .col-6(v-for="(item, index) in characteristics" :key="index")
-        q-checkbox(v-model="item.isChecked" :label="item.name")
-    .row.q-pb-lg(v-if="!isCharacteristics")
-      .col.cursor-pointer(@click="isCharacteristics=!isCharacteristics")
-        .text-h6.text-primary Скрыть
+    abstract-list(:dataArray="characteristics")
 
 </template>
 
 <script>
+import AbstractList from './AbstractDataList/abstractList'
 export default {
   name: 'specifications',
+  components: { AbstractList },
   props: {
     description: {
       type: String,
