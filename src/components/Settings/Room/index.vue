@@ -66,6 +66,7 @@ import StudioFilter from '../../Filters/StudioFilter'
 import FiltersList from '../../Filters/FiltersList'
 import room from '../../../api/room'
 import RoomList from './roomList'
+import studios from '../../../api/studios'
 export default {
   data () {
     return {
@@ -91,16 +92,22 @@ export default {
     services
   },
   async mounted () {
-    this.$root.$on('changeFilter', _ => {
-      this.getStudioAndRoom()
-    })
+    this.$root.$on('changeFilter', this.getStudioAndRoom)
     this.getStudioAndRoom()
   },
   methods: {
     async getStudioAndRoom () {
-      const filter = this.$app.filters.getValues('settings')
-      this.rooms = this.$app.rooms.getFiltered(filter)
-      this.currentStudio = this.$app.studios.getFiltered(filter)
+      this.currentRoomData = {}
+      let filter = this.$app.filters.getValues('settings')
+      if (!filter.studio) {
+        const { items } = await studios.getAll().then(resp => resp.data)
+        const [{ rooms }] = items.filter(item => item.id === items[0].id)
+        this.rooms = rooms
+        this.currentStudio = items[0]
+      } else {
+        this.rooms = await this.getAllRooms(filter.studio)
+        this.currentStudio = this.$app.studios.getFiltered(filter)
+      }
       this.selectedRoom = this.rooms.length ? this.rooms[0] : {}
       if (this.selectedRoom.hasOwnProperty('id') && this.selectedRoom.id) {
         await this.getRoomData(this.selectedRoom.id)
@@ -121,6 +128,11 @@ export default {
         this.currentRoomData = await room.getOne(id)
       }
     },
+    async getAllRooms (id) { // Получаем массив всех залов локации id
+      const { items } = await studios.getAll().then(resp => resp.data)
+      const [{ rooms }] = items.filter(item => item.id === id)
+      return rooms
+    },
     async createNew () {
       const filter = this.$app.filters.getValues('settings')
       const { data } = await room.getDefault()
@@ -132,10 +144,14 @@ export default {
     },
     async saveChanges () {
       if (this.isPost) {
-        console.log(this.currentRoomData)
-      } else {
-        console.log('PUT is not ready yet...')
         await room.createRoom(this.currentRoomData)
+        this.rooms = await this.getAllRooms(this.currentRoomData.studio.id) // Обновляем список залов для блока слева
+        const newRoom = this.rooms.filter(item => item.name === this.currentRoomData.name)[0]
+        this.setCurrentRoom(newRoom) // Выбираем новосозданный зал в списке
+        this.reloadData++
+      } else {
+        // TODO PUT
+        console.log('PUT is not ready yet...')
       }
     }
   }
