@@ -7,7 +7,7 @@
         template(#append)
           q-btn.q-btn--no-uppercase(label="Добавить зал" dense color="primary" @click="createNew")
     .content--content2
-      .row.q-py-md(:key="reloadData")
+      .row.q-py-md.q-pr-sm(:key="reloadData")
         .col-3
         .col.fixed.bg-white
           room-list(
@@ -15,7 +15,7 @@
             @setCurrentRoom="setCurrentRoom"
             :selectedRoom="selectedRoom.id"
           )
-        .col-6
+        .col-9
           roomData(
             :currentStudio="currentStudio"
             :selectedRoom="currentRoomData.name"
@@ -36,6 +36,7 @@
           )
           // -------------- TODO --------------------
           // images
+          // ----------------------------------------
           interior(
             :interiors="currentRoomData.interiors"
           )
@@ -47,6 +48,7 @@
           )
           // -------------- TODO --------------------
           // services(:singleStudio="singleStudio")
+          // ----------------------------------------
           .row
             q-btn.fit.bg-primary.text-white(label="Сохранить" no-caps @click="saveChanges")
 </template>
@@ -120,11 +122,11 @@ export default {
       }
     },
     async createNew () {
-      this.currentRoomData = {}
-      this.currentRoomData.interiors = await room.getInteriors()
-      this.currentRoomData.characteristics = await room.getCharacteristics()
-      this.currentRoomData.backgrounds = await room.getBackgrounds()
-      this.currentRoomData.extras = await room.getExtras()
+      const filter = this.$app.filters.getValues('settings')
+      const { data } = await room.getDefault()
+      this.currentStudio = this.$app.studios.getFiltered(filter)
+      this.currentRoomData = data
+      this.currentRoomData.studio.id = filter.studio
       this.isPost = true
       this.reloadData++
     },

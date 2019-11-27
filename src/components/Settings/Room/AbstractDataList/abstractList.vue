@@ -2,14 +2,16 @@
   .data
     .row(v-if="showPart")
       // Модификация объекта!!!!!!!
-      .col-6(v-for="(item, index) in dataArray" :key="index")
+      .col-3(v-for="(item, index) in dataArray" :key="index")
         q-checkbox(v-if="index < itemsCount" v-model="item.isChecked" :label="item.name")
     .row.q-pb-lg(v-if="showPart")
       .col.cursor-pointer(@click="showPart=!showPart")
-        .text-h6.text-primary Показать все
+        .text-h6.text-primary(
+          v-if="isSomeItems"
+        ) Показать ещё {{ dataArray.length - itemsCount < 0 ? isSomeItems = false : dataArray.length - itemsCount }}
     .row(v-if="!showPart")
       // Модификация объекта!!!!!!!
-      .col-6(v-for="(item, index) in dataArray" :key="index")
+      .col-3(v-for="(item, index) in dataArray" :key="index")
         q-checkbox(v-model="item.isChecked" :label="item.name")
     .row.q-pb-lg(v-if="!showPart")
       .col.cursor-pointer(@click="showPart=!showPart")
@@ -26,7 +28,8 @@ export default {
     }
   },
   data: () => ({
-    itemsCount: 6,
+    itemsCount: 8,
+    isSomeItems: true,
     showPart: true
   })
 }
