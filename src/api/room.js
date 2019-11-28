@@ -8,6 +8,14 @@ export default {
     }
     return r
   },
+  getEmpty: async () => {
+    try {
+      const r = await api.get(`${API_URL}/room/additions`)
+      return r.data.data
+    } catch (e) {
+      console.warn('catch :: room :: getEmptyDataForRoom', e)
+    }
+  },
   getOne: async (id) => {
     try {
       const r = await api.get(`${API_URL}/room/${id}`)
@@ -54,6 +62,14 @@ export default {
       return status.data
     } catch (err) {
       console.warn('catch :: studios :: createRoom', err)
+    }
+  },
+  updateRoom: async (id, roomData) => {
+    try {
+      const status = await api.put(`${API_URL}/room/${id}`, roomData)
+      return status.data
+    } catch (err) {
+      console.warn('catch :: studios :: updateRoom', err)
     }
   }
 }
