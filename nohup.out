@@ -11,3 +11,8 @@ OpenJDK 64-Bit Server VM warning: Option UseConcMarkSweepGC was deprecated in ve
  @Version: 2.2.0, @Build Date: 2019-07-19
 
 
+2019-11-28 20:50:30,614 [1363206]   WARN - plugins.jade.parser.JadeParser - should not be here 
+2019-11-28 20:50:33,740 [1366332]   WARN - plugins.jade.parser.JadeParser - should not be here 
+2019-11-28 20:50:33,934 [1366526]   WARN - plugins.jade.parser.JadeParser - should not be here 
+2019-11-28 20:56:28,083 [1720675]   WARN - ution.process.OSProcessHandler - Process has been already terminated: setsid /usr/bin/git -c credential.helper= -c core.quotepath=false -c log.showSignature=false -c diff.renames=false log --no-walk=unsorted --stdin --pretty=format:%x01%x01%H%x02%x02%P%x02%x02%ct%x02%x02%cn%x02%x02%ce%x02%x02%an%x02%x02%at%x02%x02%ae%x02%x02%s%x02%x02%b%x02%x02%B%x03%x03 --encoding=UTF-8 --name-status -- 
+2019-11-28 21:59:49,539 [5522131]   WARN - ution.process.OSProcessHandler - Process has been already terminated: setsid /usr/bin/git -c credential.helper= -c core.quotepath=false -c log.showSignature=false -c diff.renames=false log --no-walk=unsorted --stdin --pretty=format:%x01%x01%H%x02%x02%P%x02%x02%ct%x02%x02%cn%x02%x02%ce%x02%x02%an%x02%x02%at%x02%x02%ae%x02%x02%s%x02%x02%b%x02%x02%B%x03%x03 --encoding=UTF-8 --name-status -- 

@@ -108,7 +108,7 @@ export default {
       this.reloadData++
       this.isPost = false
     },
-    async setCurrentRoom (room) {
+    async setCurrentRoom (room) { // $emited from child component
       this.selectedRoom = room
       if (this.selectedRoom.hasOwnProperty('id') && this.selectedRoom.id) {
         this.currentRoomData = await this.getRoomData(this.selectedRoom.id)
