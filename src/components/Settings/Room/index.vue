@@ -15,13 +15,15 @@
             @setCurrentRoom="setCurrentRoom"
             :selectedRoom="selectedRoom.id"
           )
-        .col-9
+        .col-6
           roomData(
             :currentStudio="currentStudio"
             :roomData="currentRoomData"
+            :isRequired="isRequired"
           )
           specifications(
             :specification="currentRoomData"
+            :isRequired="isRequired"
           )
           payment(
             :payment="currentRoomData.payment"
@@ -67,7 +69,8 @@ export default {
       currentStudio: {},
       rooms: [],
       selectedRoom: {},
-      currentRoomData: {}
+      currentRoomData: {},
+      isRequired: false
     }
   },
   components: {
@@ -108,7 +111,7 @@ export default {
       this.reloadData++
       this.isPost = false
     },
-    async setCurrentRoom (room) { // $emited from child component
+    async setCurrentRoom (room) {
       this.selectedRoom = room
       if (this.selectedRoom.hasOwnProperty('id') && this.selectedRoom.id) {
         this.currentRoomData = await this.getRoomData(this.selectedRoom.id)
@@ -133,21 +136,55 @@ export default {
       this.currentStudio = this.$app.studios.getFiltered(filter)
       this.currentRoomData = data
       this.currentRoomData.studio.id = filter.studio
-      // this.currentRoomData = await room.getEmpty()
       this.isPost = true
-      this.reloadData++
+      // this.reloadData++
     },
     async saveChanges () {
+      if (!this.currentRoomData.name ||
+          !this.currentRoomData.minHours ||
+          !this.currentRoomData.height ||
+          !this.currentRoomData.yardage
+      ) {
+        this.isRequired = true
+        console.warn('Заполните обязательные поля')
+        this.showNotif('Заполните обязательные поля')
+        return
+      }
+      this.isRequired = false
       if (this.isPost) {
-        await room.createRoom(this.currentRoomData)
+        const result = await room.createRoom(this.currentRoomData)
+        if (result.hasOwnProperty('errors')) {
+          this.showNotif('Ощибка создания зала. Проверьте обязательные поля')
+          result.errors.forEach(item => {
+            this.currentRoomData[item.source] = ''
+          })
+          return
+        } else if (result.hasOwnProperty('data')) {
+          this.showNotif('Зал создан!', 'green')
+        }
         this.rooms = await this.getAllRooms(this.currentRoomData.studio.id) // Обновляем список залов для блока слева
         const newRoom = this.rooms.filter(item => item.name === this.currentRoomData.name)[0]
         this.setCurrentRoom(newRoom) // Выбираем новосозданный зал в списке
       } else {
-        await room.updateRoom(this.currentRoomData.id, this.currentRoomData)
+        const result = await room.updateRoom(this.currentRoomData.id, this.currentRoomData)
+        if (result.hasOwnProperty('errors')) {
+          this.showNotif('Ощибка создания зала. Проверьте обязательные поля')
+          result.errors.forEach(item => {
+            this.currentRoomData[item.source] = ''
+          })
+          return
+        } else if (result.hasOwnProperty('data')) {
+          this.showNotif('Данные сохранены!', 'green')
+        }
         this.rooms = await this.getAllRooms(this.currentRoomData.studio.id) // Обновляем список залов для блока слева
       }
       this.reloadData++
+    },
+    showNotif (msg, clr = 'purple') {
+      this.$q.notify({
+        message: msg,
+        color: clr
+      })
     }
   }
 }

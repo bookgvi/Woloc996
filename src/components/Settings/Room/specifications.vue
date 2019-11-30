@@ -12,14 +12,17 @@
             rows=5
             style="width: 100%;"
           )
-    .row.q-pb-lg
+    .row.q-pb-lg(:key="reloadFields")
       .col.q-pr-sm
-        span Высота потолков, м
-        q-input(v-model="specification.height" outlined dense)
+        span Высота потолков, м&nbsp;
+        span.text-red *
+        q-input(v-model="specification.height" :rules="[val => !!val || 'Обязательно для заполнения']" outlined dense)
       .col
         span(style="line-height: 0;") Площадь, м
           sup 2
-        q-input(v-model="specification.yardage" outlined dense)
+        span &nbsp;
+        span.text-red *
+        q-input(v-model="specification.yardage" :rules="[val => !!val || 'Обязательно для заполнения']" outlined dense)
     abstract-list(:dataArray="specification.characteristics")
 
 </template>
@@ -32,15 +35,22 @@ export default {
   props: {
     specification: {
       type: Object
-    }
+    },
+    isRequired: Boolean
   },
   data: () => ({
     itemsCount: 6,
     roomHeight: 0,
     roomYardage: 0,
     roomDescription: '',
-    isCharacteristics: true
+    isCharacteristics: true,
+    reloadFields: 0
   }),
+  watch: {
+    'isRequired' (newVal) {
+      if (newVal) this.reloadFields++
+    }
+  },
   created () {
     this.roomHeight = this.height
     this.roomYardage = this.yardage

@@ -7,10 +7,11 @@
       .col
         span Локация
         q-input.q-pt-sm(v-model="currentStudioData" outlined dense disable)
-    .row.q-pb-lg
+    .row.q-pb-lg(:key="reloadFields")
       .col
-        span Название зала
-        q-input.q-pt-sm(v-model="roomData.name" outlined dense)
+        span Название зала&nbsp;
+        span.text-red *
+        q-input.q-pt-sm(v-model="roomData.name" :rules="[val => !!val || 'Обязательно для заполнения']" outlined dense)
     .row.q-pb-md
       span Цвет зала в календаре
     .row.items-center.q-pb-md
@@ -37,8 +38,9 @@
         span Тип зала
         q-select(v-model="currentRoomType" :options="roomType" outlined dense)
       .col-4.q-pr-sm
-        span Мин. кол-во часов
-        q-input(v-model="roomData.minHours" outlined dense)
+        span Мин. кол-во часов&nbsp;
+        span.text-red *
+        q-input(v-model="roomData.minHours" :rules="[val => !!val || 'Обязательно для заполнения']" outlined dense)
     .row.q-pb-md
       span Опубликован и доступен для бронирования
     .row.q-pb-sm
@@ -46,7 +48,8 @@
     .row.q-pb-lg
       .col-7.q-pr-sm
         q-select(v-model="needPrepayment" :options="prepay" outlined dense)
-      .col.q-pa-none
+      // TODO - Сделать позжее!!!!
+      // .col.q-pa-none
         q-btn.bg-primary.text-white(label="Привязать google календарь" no-caps)
 </template>
 
@@ -68,8 +71,14 @@ export default {
     currentRoomTypeData: 'Рабочий',
     roomType: ['Гримерка или подсобка', 'Рабочий'],
     currentPrepay: 'На выбор клиента',
-    prepay: ['Без предоплаты', 'На выбор клиента']
+    prepay: ['Без предоплаты', 'На выбор клиента'],
+    reloadFields: 0
   }),
+  watch: {
+    'isRequired' (newVal) {
+      if (newVal) this.reloadFields++
+    }
+  },
   computed: {
     currentStudioData: {
       get () {
