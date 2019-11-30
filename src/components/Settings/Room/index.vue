@@ -1,12 +1,12 @@
 <template lang="pug">
-  .room(:key="filterChanged")
+  .room
     .menu.menu--menu2
       filters-list(name="settings")
         template(#prepend="props")
           studio-filter(v-bind="props")
         template(#append)
           q-btn.q-btn--no-uppercase(label="Добавить зал" dense color="primary" @click="createNew")
-    .content--content2
+    .content--content2(:key="filterChanged")
       .row.q-py-md.q-pr-sm(:key="reloadData")
         .col-3
         .col.fixed.bg-white
@@ -100,16 +100,16 @@ export default {
       this.currentRoomData = {}
       let filter = this.$app.filters.getValues('settings')
       if (!filter.studio) return
-      this.currentStudio = await this.$app.studios.getFiltered(filter)
+      this.currentStudio = await this.$app.studios.getFiltered(filter) // /////////////////////////////////////////////////////
       if (!this.currentStudio) return
       this.rooms = this.$app.rooms.getFiltered(filter)
-      if (!this.rooms) return
+      if (!this.rooms) return // /////////////////////////////////////////////////////
       this.selectedRoom = this.rooms.length ? this.rooms[0] : {}
       if (this.selectedRoom.hasOwnProperty('id') && this.selectedRoom.id) {
-        this.currentRoomData = await this.getRoomData(this.selectedRoom.id)
+        this.currentRoomData = await this.getRoomData(this.selectedRoom.id) // /////////////////////////////////////////////////////
       }
-      this.reloadData++
-      this.isPost = false
+      this.reloadData++ // /////////////////////////////////////////////////////
+      this.isPost = false // /////////////////////////////////////////////////////
     },
     async setCurrentRoom (room) {
       this.selectedRoom = room
