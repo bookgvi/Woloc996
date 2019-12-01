@@ -15,7 +15,7 @@
             @setCurrentRoom="setCurrentRoom"
             :selectedRoom="selectedRoom.id"
           )
-        .col-6
+        .col-6(v-if="currentRoomData.hasOwnProperty('status') && currentRoomData.status")
           roomData(
             :currentStudio="currentStudio"
             :roomData="currentRoomData"
