@@ -113,8 +113,8 @@ export default {
   },
   beforeRouteLeave (to, from, next) {
     this.isSomethingChanged =
-      this.isDefaultStudioEqualCurrentStudio(this.currentRoomData, this.roomDataDefault) ||
-      this.isDefaultStudioEqualCurrentStudio(this.rooms, this.defaultRooms)
+      this.isDefaultNotEqualCurrent(this.currentRoomData, this.roomDataDefault) ||
+      this.isDefaultNotEqualCurrent(this.rooms, this.defaultRooms)
     if (this.isSomethingChanged) {
       this.isLeavePageDialog = true
       this.routerFrom = from
@@ -222,16 +222,18 @@ export default {
       let tmpObj = JSON.stringify(Object.assign({}, this.currentRoomData))
       this.roomDataDefault = JSON.parse(tmpObj)
     },
-    isDefaultStudioEqualCurrentStudio (obj, defaultObj) {
+    isDefaultNotEqualCurrent (obj, defaultObj) {
       for (let key in obj) {
         if (Array.isArray(obj[key])) {
           for (let index = 0, arrLength = obj[key].length; index < arrLength; index++) {
-            if (this.isDefaultStudioEqualCurrentStudio(obj[key][index], defaultObj[key][index])) {
+            if (this.isDefaultNotEqualCurrent(obj[key][index], defaultObj[key][index])) {
               return true
             }
           }
         } else if (typeof obj[key] === 'object') {
-          this.isDefaultStudioEqualCurrentStudio(obj[key], defaultObj[key])
+          if (this.isDefaultNotEqualCurrent(obj[key], defaultObj[key])) {
+            return true
+          }
         } else {
           if (String(obj[key]) !== String(defaultObj[key])) {
             return true
