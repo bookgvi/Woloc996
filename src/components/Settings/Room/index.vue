@@ -8,8 +8,7 @@
           q-btn.q-btn--no-uppercase(label="Добавить зал" dense color="primary" @click="createNew")
     .content--content2(:key="filterChanged")
       .row.q-py-md.q-pr-sm(:key="reloadData")
-        .col-3
-        .col.fixed.bg-white
+        .col-3.bg-white
           room-list(
             :rooms="rooms"
             @setCurrentRoom="setCurrentRoom"
@@ -17,13 +16,13 @@
           )
         .col-6
           roomData(
-            v-if="currentRoomData.hasOwnProperty('status') && currentRoomData.status"
+            v-if="currentRoomData.hasOwnProperty('status')"
             :currentStudio="currentStudio"
             :roomData="currentRoomData"
             :isRequired="isRequired"
           )
           specifications(
-            v-if="currentRoomData.hasOwnProperty('description') && currentRoomData.description"
+            v-if="currentRoomData.hasOwnProperty('description')"
             :specification="currentRoomData"
             :isRequired="isRequired"
           )
@@ -47,6 +46,14 @@
           // ----------------------------------------
           .row
             q-btn.fit.bg-primary.text-white(label="Сохранить" no-caps @click="saveChanges")
+      q-dialog(v-model="isLeavePageDialog" persistent)
+        q-card
+          q-card-section.row.items-center
+            q-icon(name="report" color="primary" text-color="white" style="font-size: 2rem;")
+            span.q-ml-sm Вы покидаете страницу настроек зала! <br /> Все несохраненные данные будут утеряны.
+          q-card-actions(align="right")
+            q-btn.primary(label="ОК" color="primary" flat no-caps v-close-popup @click="leavePage")
+            q-btn.primary(label="Отмена" color="primary" flat no-caps v-close-popup @click="isLeavePageConfirm = false")
 </template>
 
 <script>
@@ -66,13 +73,20 @@ import studios from '../../../api/studios'
 export default {
   data () {
     return {
+      defaultStudio: {},
+      defaultRooms: {},
+      roomDataDefault: {},
       isPost: false,
       reloadData: 0,
       currentStudio: {},
       rooms: [],
       selectedRoom: {},
       currentRoomData: {},
-      isRequired: false
+      isRequired: false,
+      isSomethingChanged: true,
+      isLeavePageDialog: false,
+      routerTo: '',
+      routerFrom: ''
     }
   },
   components: {
@@ -97,27 +111,44 @@ export default {
   async created () {
     this.getStudioAndRoom()
   },
+  beforeRouteLeave (to, from, next) {
+    this.isDefaultStudioEqualCurrentStudio(this.rooms, this.defaultRooms)
+    this.isDefaultStudioEqualCurrentStudio(this.roomDataDefault, this.currentRoomData)
+
+    if (this.isSomethingChanged) {
+      this.isLeavePageDialog = true
+      this.routerFrom = from
+      this.routerTo = to
+    } else {
+      next()
+    }
+  },
   methods: {
     async getStudioAndRoom () {
       this.currentRoomData = {}
       let filter = this.$app.filters.getValues('settings')
       if (!filter.studio) return
-      this.currentStudio = await this.$app.studios.getFiltered(filter) // /////////////////////////////////////////////////////
+      this.currentStudio = await this.$app.studios.getFiltered(filter)
       if (!this.currentStudio) return
       this.rooms = this.$app.rooms.getFiltered(filter)
-      if (!this.rooms) return // /////////////////////////////////////////////////////
+      if (!this.rooms) return
       this.selectedRoom = this.rooms.length ? this.rooms[0] : {}
       if (this.selectedRoom.hasOwnProperty('id') && this.selectedRoom.id) {
-        this.currentRoomData = await this.getRoomData(this.selectedRoom.id) // /////////////////////////////////////////////////////
+        this.currentRoomData = await this.getRoomData(this.selectedRoom.id)
+
+        this.defaultRooms = Object.assign({}, this.rooms)
+        this.roomDataDefault = Object.assign({}, this.currentRoomData)
       }
-      this.reloadData++ // /////////////////////////////////////////////////////
-      this.isPost = false // /////////////////////////////////////////////////////
+      this.reloadData++
+      this.isPost = false
     },
     async setCurrentRoom (room) {
       this.selectedRoom = room
       if (this.selectedRoom.hasOwnProperty('id') && this.selectedRoom.id) {
         this.currentRoomData = await this.getRoomData(this.selectedRoom.id)
       }
+      this.defaultRooms = Object.assign({}, this.rooms)
+      this.roomDataDefault = Object.assign({}, this.currentRoomData)
       this.isPost = false
       this.reloadData++
     },
@@ -134,7 +165,8 @@ export default {
     },
     async createNew () {
       const filter = this.$app.filters.getValues('settings')
-      const { data } = await room.getDefault()
+      const jsonData = JSON.stringify(await room.getDefault())
+      const { data } = JSON.parse(jsonData)
       this.currentStudio = this.$app.studios.getFiltered(filter)
       this.currentRoomData = data
       this.currentRoomData.studio.id = filter.studio
@@ -156,7 +188,7 @@ export default {
       if (this.isPost) {
         const result = await room.createRoom(this.currentRoomData)
         if (result.hasOwnProperty('errors')) {
-          this.showNotif('Ощибка создания зала. Проверьте обязательные поля')
+          this.showNotif('Ошибка создания зала. Проверьте обязательные поля')
           result.errors.forEach(item => {
             this.currentRoomData[item.source] = ''
           })
@@ -170,7 +202,7 @@ export default {
       } else {
         const result = await room.updateRoom(this.currentRoomData.id, this.currentRoomData)
         if (result.hasOwnProperty('errors')) {
-          this.showNotif('Ощибка создания зала. Проверьте обязательные поля')
+          this.showNotif('Ошибка создания зала. Проверьте обязательные поля')
           result.errors.forEach(item => {
             this.currentRoomData[item.source] = ''
           })
@@ -180,7 +212,26 @@ export default {
         }
         this.rooms = await this.getAllRooms(this.currentRoomData.studio.id) // Обновляем список залов для блока слева
       }
+      this.defaultRooms = Object.assign({}, this.rooms)
+      this.roomDataDefault = Object.assign({}, this.currentRoomData)
       this.reloadData++
+    },
+    leavePage () {
+      this.isSomethingChanged = false
+      this.$router.replace(this.routerTo.fullPath)
+    },
+    isDefaultStudioEqualCurrentStudio (obj, defaultObj) {
+      for (let key in obj) {
+        if (typeof obj[key] === 'object') {
+          this.isDefaultStudioEqualCurrentStudio(obj[key], defaultObj[key])
+        }
+        if (obj[key] === defaultObj[key]) {
+          this.isSomethingChanged = false
+        } else {
+          this.isSomethingChanged = true
+          return
+        }
+      }
     },
     showNotif (msg, clr = 'purple') {
       this.$q.notify({

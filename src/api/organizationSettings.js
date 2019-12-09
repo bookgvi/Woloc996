@@ -8,14 +8,16 @@ export default {
       return r.data
     } catch (e) {
       console.warn('catch :: dashboard/organization-settings :: getOne', e)
+      return e
     }
   },
-  updateOne: async data => {
+  updateOne: async (id, data) => {
     try {
-      const r = await api.put(`${API_URL}/settings/organizations`, data)
+      const r = await api.put(`${API_URL}/settings/organizations/${id}`, data)
       return r.data
     } catch (e) {
       console.warn('catch :: dashboard/organization-settings :: updateOne', e)
+      return e
     }
   }
 }
